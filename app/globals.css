@@ -225,12 +225,45 @@ textarea.short {
   margin: 12px 0;
 }
 
+.preview-item {
+  position: relative;
+  margin: 0;
+}
+
 .preview img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid var(--line);
+}
+
+.preview-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  min-height: 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #7c2d12;
+  border: 1px solid var(--line);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.preview-remove:hover {
+  background: #fff7ed;
+  color: var(--focus);
+}
+
+.clear-images {
+  margin: 0 8px 12px 0;
 }
 
 .problem-rows {

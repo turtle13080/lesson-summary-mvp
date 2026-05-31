@@ -138,6 +138,7 @@ export default function Home() {
     const imageFiles = [...files].filter((file) => file.type.startsWith("image/"));
     const items = await Promise.all(
       imageFiles.map(async (file, index) => ({
+        id: `${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`,
         name: file.name || `clipboard-${Date.now()}-${index}.png`,
         dataUrl: await readFileAsDataUrl(file)
       }))
@@ -444,9 +445,24 @@ export default function Home() {
               </label>
               <div className="preview">
                 {selectedImages.map((image) => (
-                  <img key={image.name + image.dataUrl.slice(0, 20)} src={image.dataUrl} alt={image.name} />
+                  <figure className="preview-item" key={image.id}>
+                    <img src={image.dataUrl} alt={image.name} />
+                    <button
+                      className="preview-remove"
+                      type="button"
+                      aria-label={`${image.name} 삭제`}
+                      onClick={() => setSelectedImages((current) => current.filter((item) => item.id !== image.id))}
+                    >
+                      ×
+                    </button>
+                  </figure>
                 ))}
               </div>
+              {selectedImages.length > 0 && (
+                <button className="ghost clear-images" type="button" onClick={() => setSelectedImages([])}>
+                  사진 전체 비우기
+                </button>
+              )}
               <button type="button" disabled={busy === "extract"} onClick={extractImages}>
                 {busy === "extract" ? "추출 중..." : "문항/수식 추출"}
               </button>
