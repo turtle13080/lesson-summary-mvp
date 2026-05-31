@@ -18,7 +18,16 @@ async function postJson(url, payload) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload)
   });
-  const data = await response.json();
+  const text = await response.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    const friendly = text.startsWith("Request Entity")
+      ? "PDF 파일이 너무 커서 서버 요청 제한에 걸렸습니다. 작은 PDF나 필요한 페이지만 잘라 업로드해 주세요."
+      : text || "서버가 JSON이 아닌 응답을 보냈습니다.";
+    throw new Error(friendly);
+  }
   if (!response.ok) throw new Error(data.error || "요청 처리에 실패했습니다.");
   return data;
 }
@@ -176,11 +185,14 @@ export default function Home() {
     if (!file || !session || !supabase) return;
     try {
       setBusy("pdf");
-      const dataUrl = await readFileAsDataUrl(file);
-      const indexed = await postJson("/api/pdf-index", { name: file.name, dataUrl });
       const storagePath = `${session.user.id}/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from("pdf-sources").upload(storagePath, file);
       if (uploadError) throw uploadError;
+      const { data: signed, error: signedError } = await supabase.storage
+        .from("pdf-sources")
+        .createSignedUrl(storagePath, 60 * 10);
+      if (signedError) throw signedError;
+      const indexed = await postJson("/api/pdf-index", { name: file.name, signedUrl: signed.signedUrl });
 
       const { data: source, error: sourceError } = await supabase
         .from("pdf_sources")
